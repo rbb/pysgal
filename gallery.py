@@ -119,11 +119,18 @@ def thumbnail(jpg):
     return thumb
 
 
-def wr_exif_tag(fp, tags, tag):
+def wr_exif_tag(fp, tags, tag, label='none'):
+    #print "wr_exif_tag: tag = " + str(tag)
+    #print "wr_exif_tag: label = " + str(label)
     if tag in tags:
-        msg = tag +': ' +str(tags[tag])
-        #print msg
-        fp.write('\n      <br>' +msg)
+        v = str(tags[tag])
+        if 'nl' in label:
+            fp.write('\n<br>' +v)
+        elif 'none' in label:
+            fp.write('    ' +v)
+        else:
+            fp.write('\n      <br>'+label +': ' +v)
+        #print "wr_exif_tag: v = " +v
 
 def wr_img(fp, name, loc):
     fp.write('\n   <div class=figure>')
@@ -153,12 +160,12 @@ def wr_img(fp, name, loc):
         #fp.write('\n      <div class=figure>' +name )
         wr_exif_tag(fp, tags, 'DateTime')
         #wr_exif_tag(fp, tags, 'DateTimeOriginal')
-        wr_exif_tag(fp, tags, 'ExposureTime')
-        wr_exif_tag(fp, tags, 'FNumber')
-        wr_exif_tag(fp, tags, 'FocalLength')
-        wr_exif_tag(fp, tags, 'ISOSpeedRatings')
+        wr_exif_tag(fp, tags, 'ExposureTime', 'Exposure')
+        wr_exif_tag(fp, tags, 'FNumber', 'F Number')
+        wr_exif_tag(fp, tags, 'FocalLength', 'Focal Length')
+        wr_exif_tag(fp, tags, 'ISOSpeedRatings', 'ISO')
         #wr_exif_tag(fp, tags, 'Make')
-        wr_exif_tag(fp, tags, 'Model')
+        wr_exif_tag(fp, tags, 'Model', 'nl')
         #fp.write('\n      </div>')
         fp.write('\n')
     except:
