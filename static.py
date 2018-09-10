@@ -2,8 +2,6 @@
 
 root = False
 n_thumbs = 3              # number of thumbnails to display on index page
-min_size = 500,500        # minimum dimensions required to create thumbnail
-thumb_size = 250,250      # dimensions of thumbnail to create
 
 header = ("""<!doctype html>
 <html>
@@ -29,12 +27,12 @@ header = ("""<!doctype html>
     }
     div.figure {
       align: center;
-      margin: 1em auto;
+      //margin: 1em auto;
+      margin: 0.1em;
       margin-bottom: 3em;
       padding: 2em;
       width: 100%%;
       padding: 0.1em;
-      magin: 0.1em;
       font-size: 60%%;
       //line-height: 60%%;
       //vertical-align: top;
@@ -53,11 +51,37 @@ header = ("""<!doctype html>
       padding: 0.1em;
       border-radius: 0.25em;
     }
+    .box {
+       float: left;
+       width: 25%%;
+       padding: 10px;
+    }
+    .clearfix::after {
+       content: "";
+       clear: both;
+       display: table;
+    }
   </style>
 </head>
 <body>
 <div>
 """)
+
+"""
+    div.dir {
+      //align: center;
+      display: inline-block;
+      margin: 1em auto;
+      //margin-bottom: 3em;
+      padding: 2em;
+      //width: 100%%;
+      padding: 0.1em;
+      //font-size: 60%%;
+      //line-height: 60%%;
+      //vertical-align: top;
+      //color: #808080;
+    }
+"""
 
 br = '\n<br>'
 footer = '\n</div></body></html>'

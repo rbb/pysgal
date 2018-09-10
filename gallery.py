@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-#
-# Generates thumbnails and HTML gallery pages for jpgs in a directory.
+# create a static HTML gallery
 
 import datetime
 import glob
@@ -46,11 +45,37 @@ def Now(time=True):
     else:
         return datetime.datetime.now().strftime('%Y%m%d')
 
+def remove_thumbs_from_list(flist):
+    """Remove all the "_thumb" filenames from a list"""
+    mylist = list(flist)
+    tstr = "_" +opts.thumb
 
-def RandomThumb(page):
-    """Returns path to random thumbnail for a given page."""
-    return random.choice(
-      glob.glob(os.path.join(page.split('/')[0], '*_thumb.jpg')))
+    # Note: we can't remove(f) in the first for loop, because it messes up the
+    # indexing of f, and we don't (always) get the proper results
+    remove = []
+    for f in mylist:
+        if tstr in f.lower():
+            remove.append(f)
+    for f in remove:
+        mylist.remove(f)
+    return mylist
+
+def random_image_from_dir(loc, d):
+    """Returns path to random image from a given directory."""
+    #if opts.verbose:
+    #    print "random_image_from_dir: loc = " +str(loc)
+    #    print "random_image_from_dir: d = " +str(d)
+    #images = glob.glob(os.path.join(opts.dir, d, '*.[Jj][Pp][Gg]'))
+    images = glob.glob(os.path.join(loc, d, '*.[Jj][Pp][Gg]'))
+    images = remove_thumbs_from_list(images)
+    #if opts.verbose:
+    #    print "random_image_from_dir: images = " +str(images)
+    image = random.choice(images)
+    tail = image.replace(loc +'/', '')
+    if opts.verbose:
+        print "random_image_from_dir: image = " +str(image)
+        print "random_image_from_dir: tail = " +str(tail)
+    return tail
 
 
 def OrganizeRoot():
@@ -74,55 +99,25 @@ def OrganizeRoot():
                 print '%s already exists' % os.path.join(datehour, jpg)
 
 
-def GenerateThumbnails(page, jpgs):
-    """
-    Generates thumbnails for gallery pages.
+def thumbnail(jpg):
+    """Generates a thumbnail of an image."""
 
-    Args:
-    page: str, name of page for thumbnails.
-    jpgs: list, jpg files to create thumbnails for.
-    Returns:
-    url_imgs: list, image links to write.
-    """
-    c_exist = 0
-    c_save = 0
-    c_small = 0
-    pc = 0
-    url_imgs = []
-
-    for jpg in jpgs:
+    thumb = ''
+    try:
+        im = Image.open(jpg)
+        thumb = '%s_%s.%s' % (jpg.split('.')[0], opts.thumb, 'jpg')
+        #im.thumbnail([opts.thumbsize, opts.thumbsize], Image.ANTIALIAS)
+        im.thumbnail([opts.thumbsize, opts.thumbsize])
+        im.save(thumb, 'JPEG')
+    except IOError as e:
+        print 'Problem with %s: %s, moving to %s' % (jpg, e, opts.tmp)
         try:
-            im = Image.open(jpg)
-            if im.size > static.min_size:
-                thumb = '%s_%s.%s' % (jpg.split('.')[0], 'thumb', 'jpg')
-                if not os.path.exists(thumb):
-                    im.thumbnail(static.thumb_size, Image.ANTIALIAS)
-                    im.save(thumb, 'JPEG')
-                    c_save += 1
-   
-                    if (pc == 100):  # progress counter
-                        print '%s: wrote 100 thumbnails, continuing' % page
-                        pc = 0
-                    pc += 1
-   
-                else:
-                    c_exist += 1
-   
-                url_imgs.append(static.url_img % (jpg, jpg, thumb))
-            else:
-                if '_thumb.jpg' not in jpg:
-                    c_small += 1
-        except IOError as e:
-            print 'Problem with %s: %s, moving to %s' % (jpg, e, opts.tmp)
-            try:
-                shutil.move(jpg, opts.tmp)
-            except shutil.Error:
-                print 'Could not move %s' % jpg
-                pass
-   
-    print '%s: %d new thumbnails, %d already exist, %d too small' % (
-        page, c_save, c_exist, c_small)
-    return url_imgs
+            shutil.move(jpg, opts.tmp)
+        except shutil.Error:
+            print 'Could not move %s' % jpg
+            pass
+    return thumb
+
 
 def wr_exif_tag(fp, tags, tag):
     if tag in tags:
@@ -171,10 +166,10 @@ def wr_img(fp, name, loc):
     #print "tags: " +str(tags)
     fp.write('   </div>')
 
-def wr_dir(fp, d, root_url):
-    image = root_url +opts.folder_image
+def wr_dir(fp, d, root_url, image=''):
+    if not image:
+        image = root_url +opts.folder_image
     fp.write('\n   <br><a href="' +d +'"><img title="' +d +'" src="' +image +'">' +d +'</a><br>')
-
 
 def WriteGalleryPage(loc, flist, dlist):
     """Writes a gallery page for jpgs in path.
@@ -208,9 +203,11 @@ def WriteGalleryPage(loc, flist, dlist):
     with open(fout, 'w') as index_file:
         index_file.write(static.header %
             (loc, opts.bcolor, opts.dcolor))
-        index_file.write("<p>" +tail +"</p>\n")
+        if tail:
+            index_file.write("<p>" +tail +"</p>\n")
 
         #------ Navigation
+        index_file.write('\n<div id="nav" class=clearfix>')
         if root_url:
             image = root_url +opts.folder_image
             image_up = root_url +opts.folder_up_image
@@ -225,18 +222,25 @@ def WriteGalleryPage(loc, flist, dlist):
             #index_file.write('\n</div>')
             """
 
-            index_file.write('\n<div id="nav">')
+            index_file.write('\n   <div class=box>')
             index_file.write('\n      <a href="' +root_url +'">Home</a>')
             index_file.write('\n      <a href="../">Up</a>')
-            #index_file.write('\n</div>')
+            index_file.write('\n   </div>')
 
         #------ Directories
         if dlist:
-            #index_file.write("\n")
-            #index_file.write("\n<H2>Folders</H2>")
-            #index_file.write('\n<div id="dirs">')
             for d in dlist:
-                wr_dir(index_file, d, root_url)
+                if opts.verbose:
+                    print "WriteGalleryPage: d = " +d
+                rimage = random_image_from_dir(loc, d)
+                thumb = thumbnail( os.path.join(loc, rimage) )
+                thumbtail = thumb.replace(loc, '')
+                dir_thumb = d +'_'+opts.thumb+'.jpg'
+                copy_file(thumb, os.path.join(loc, dir_thumb))
+                #wr_dir(index_file, d, root_url, dir_thumb)
+                index_file.write('\n   <div class=box>')
+                index_file.write('\n   <a href="' +d +'"><img title="' +d +'" src="' +dir_thumb +'"><br>' +d +'</a>')
+                index_file.write('\n   </div>')
         index_file.write('\n</div>\n')
 
 
@@ -245,6 +249,8 @@ def WriteGalleryPage(loc, flist, dlist):
             flist.remove(opts.folder_image)
         if opts.folder_up_image in flist:
             flist.remove(opts.folder_up_image)
+        flist = remove_thumbs_from_list(flist)
+
         if flist:
             index_file.write("<hr>\n")
             index_file.write('\n<div id="images">')
@@ -293,9 +299,6 @@ def main():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process directory tree of jpgs to create a static webpage')
-    parser.add_argument('--organize', dest='organize', action='store_true',
-                        default=False,
-                        help='Create directories for jpgs, by date')
     parser.add_argument('-d', '--dir', dest='dir', default='www',
                         help='directory to search for jpgs [%(default)s]')
     parser.add_argument('-t', '--tmp', dest='tmp', default='/tmp',
@@ -309,15 +312,22 @@ if __name__ == '__main__':
     parser.add_argument('--folder-image', dest='folder_image',
                         default='folder.png',
                         help='filename for folder image [%(default)s]')
+    parser.add_argument('--thumb', dest='thumb', default='thumb',
+                        help='text to append to base of image filename for thumbnails [%(default)s]')
+    parser.add_argument('--thumbsize', dest='thumbsize', metavar='N', default=100,
+                        help='thumbnail size [%(default)s]')
     parser.add_argument('--folder-up-image', dest='folder_up_image',
                         default='folder_up.png',
                         help='filename for folder image [%(default)s]')
+    parser.add_argument('--organize', dest='organize', action='store_true',
+                        default=False,
+                        help='Create directories for jpgs, by date')
     parser.add_argument('-v', dest='verbose', action='store_true',
                         default=False,
                         help='print extra messages')
 
     opts = parser.parse_args()
-    #opts.verbose=True                     # DEBUG for ipython
-    #opts.dir='/var/www/html/gallery/'     # DEBUG for ipython
+    opts.verbose=True                     # DEBUG for ipython
+    opts.dir='/var/www/html/gallery/'     # DEBUG for ipython
 
     main()
