@@ -71,7 +71,8 @@ header = ("""<!doctype html>
 """)
 
 
-
+# Based off code from:
+# https://css-tricks.com/snippets/css/css-grid-starter-layouts/
 header_grid = ("""<!doctype html>
 <html>
 <head>
