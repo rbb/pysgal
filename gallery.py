@@ -70,11 +70,14 @@ def random_image_from_dir(loc, d):
     images = remove_thumbs_from_list(images)
     #if opts.verbose:
     #    print "random_image_from_dir: images = " +str(images)
-    image = random.choice(images)
-    tail = image.replace(loc +'/', '')
-    if opts.verbose:
-        print "random_image_from_dir: image = " +str(image)
-        print "random_image_from_dir: tail = " +str(tail)
+    if images:
+        image = random.choice(images)
+        tail = image.replace(loc +'/', '')
+        if opts.verbose:
+            print "random_image_from_dir: image = " +str(image)
+            print "random_image_from_dir: tail = " +str(tail)
+    else:
+        tail = False
     return tail
 
 
@@ -240,7 +243,11 @@ def WriteGalleryPage(loc, flist, dlist):
                 if opts.verbose:
                     print "WriteGalleryPage: d = " +d
                 rimage = random_image_from_dir(loc, d)
-                thumb = thumbnail( os.path.join(loc, rimage) )
+                if rimage:
+                    thumb = thumbnail( os.path.join(loc, rimage) )
+                else:
+                    thumb = opts.folder_image
+
                 thumbtail = thumb.replace(loc, '')
                 dir_thumb = d +'_'+opts.thumb+'.jpg'
                 copy_file(thumb, os.path.join(loc, dir_thumb))
@@ -326,15 +333,19 @@ if __name__ == '__main__':
     parser.add_argument('--folder-up-image', dest='folder_up_image',
                         default='folder_up.png',
                         help='filename for folder image [%(default)s]')
+    #parser.add_argument('-x', '--exclude', dest='exclude', nargs='+', default=[],
+    #                    help='list of folders to exclude [%(default)s]')
     parser.add_argument('--organize', dest='organize', action='store_true',
                         default=False,
                         help='Create directories for jpgs, by date')
     parser.add_argument('-v', dest='verbose', action='store_true',
                         default=False,
                         help='print extra messages')
+    # TODO: add rsync option to implement:
+    # rsync -avz -e "ssh" . russandbecky.org:public_html/lr_gallery/
 
     opts = parser.parse_args()
-    opts.verbose=True                     # DEBUG for ipython
-    opts.dir='/var/www/html/gallery/'     # DEBUG for ipython
+    #opts.verbose=True                     # DEBUG for ipython
+    #opts.dir='/var/www/html/gallery/'     # DEBUG for ipython
 
     main()
