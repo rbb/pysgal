@@ -317,9 +317,9 @@ if __name__ == '__main__':
                         help='temporary folder to move corrupt files to [%(default)s]')
     parser.add_argument('-i', '--index', dest='index', default='index.html',
                         help='filename for html files [%(default)s]')
-    parser.add_argument('--background-color', dest='bcolor', default='#202020',
+    parser.add_argument('--background-color', dest='bcolor', default='#101010',
                         help='Background color [%(default)s]')
-    parser.add_argument('--div-background-color', dest='dcolor', default='#2b2b2b',
+    parser.add_argument('--div-background-color', dest='dcolor', default='#202020',
                         help='Background color [%(default)s]')
     parser.add_argument('--folder-image', dest='folder_image',
                         default='folder.png',

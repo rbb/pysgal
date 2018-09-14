@@ -140,30 +140,37 @@ div {
 .module {
     /* Demo-Specific Styles */
     #background: #eaeaea;
-    display: flex;
+    display: inline-block;
     align-items: center;
     justify-content: center;
-    height: 250px;
+    //height: 250px;
+    margin: 5px;
+    margin-bottom: 10px;
     
     /* Flex Fallback */
-    margin-left: 5px;
-    margin-right: 5px;
-    flex: 1 1 250px;
+    //margin-left: 5px;
+    //margin-right: 5px;
+    //margin-bottom: 5px;
+    //flex: 1 1 250px;
 }
 
 /* If Grid is supported, remove the margin we set for the fallback */
 @supports (display: grid) {
     .module {
-        margin: 0;
+        margin: 5px;
+        margin-bottom: 10px;
     }
 }
 .container {
     overflow: auto;
     padding: 0.1em;
 }
-a:link, a:visited {
-  //color: #93a1a1;
-  //font-size: 24px;
+a:link {
+  color: #707070;
+  text-decoration: underline;
+}
+a:visited {
+  color: #404040;
   text-decoration: underline;
 }
 </style>
