@@ -253,7 +253,7 @@ def WriteGalleryPage(loc, flist, dlist):
 
                 thumbtail = thumb.replace(loc, '')
                 dir_thumb = d +'_'+opts.thumb+'.jpg'
-                copy_file(thumb, os.path.join(loc, dir_thumb))
+                copy_file(thumb, os.path.join(loc, dir_thumb), True) # with overwrite
                 #wr_dir(index_file, d, root_url, dir_thumb)
                 index_file.write('\n   <div class=module>')
                 index_file.write('\n   <a href="' +d +'"><img title="' +d +'" src="' +dir_thumb +'"><br>' +d +'</a>')
@@ -283,8 +283,8 @@ def WriteGalleryPage(loc, flist, dlist):
         index_file.write(static.footer)
 
 
-def copy_file(src, dst):
-    if os.path.isfile(src) and not os.path.isfile(dst):
+def copy_file(src, dst, overwrite=False):
+    if (os.path.isfile(src) and not os.path.isfile(dst)) or (os.path.isfile(src) and overwrite):
         if opts.verbose:
             print "copy_file: " +src +" to " +dst
         shutil.copyfile(src, dst)
@@ -331,7 +331,7 @@ if __name__ == '__main__':
                         help='filename for folder image [%(default)s]')
     parser.add_argument('--thumb', dest='thumb', default='thumb',
                         help='text to append to base of image filename for thumbnails [%(default)s]')
-    parser.add_argument('--thumbsize', dest='thumbsize', metavar='N', default=100,
+    parser.add_argument('--thumbsize', dest='thumbsize', metavar='N', default=200,
                         help='thumbnail size [%(default)s]')
     parser.add_argument('--folder-up-image', dest='folder_up_image',
                         default='folder_up.png',
@@ -348,7 +348,8 @@ if __name__ == '__main__':
     # rsync -avz -e "ssh" . russandbecky.org:public_html/lr_gallery/
 
     opts = parser.parse_args()
-    #opts.verbose=True                     # DEBUG for ipython
+    opts.verbose=True                     # DEBUG for ipython
     #opts.dir='/var/www/html/gallery/'     # DEBUG for ipython
+    opts.dir='/home/russell/Pictures/gallery/'     # DEBUG for ipython
 
     main()
