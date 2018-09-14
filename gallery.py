@@ -137,7 +137,7 @@ def wr_exif_tag(fp, tags, tag, label='none'):
 
 def wr_img(fp, name, loc):
     fp.write('\n   <div class=figure>')
-    fp.write('\n      <a href="' +name +'"><img title="' +name +'" src="' +name 
+    fp.write('\n      <a href="' +name +'"><img title="' +name +'" src="' +name
             +'" width="100%%"></a><b>' +name +'</b>')
     #fp.write('\n      <img title="' +name +'" src="' +name +'" width="100%"></a>')
 
@@ -308,6 +308,11 @@ def main():
     copy_file(opts.folder_image, os.path.join(opts.dir, opts.folder_image) )
     copy_file(opts.folder_up_image, os.path.join(opts.dir, opts.folder_up_image) )
 
+    if opts.rsync:
+        rsync_cmd ='rsync -avz -e "ssh" ' +opts.dir +" " +opts.rsync_dest
+        print "Attempting '" +rsync_cmd +"'"
+        os.system(rsync_cmd)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process directory tree of jpgs to create a static webpage')
@@ -339,8 +344,12 @@ if __name__ == '__main__':
     parser.add_argument('-v', dest='verbose', action='store_true',
                         default=False,
                         help='print extra messages')
-    # TODO: add rsync option to implement:
-    # rsync -avz -e "ssh" . russandbecky.org:public_html/lr_gallery/
+    parser.add_argument('-s', '--rsync', dest='rsync', action='store_true',
+                        default=False,
+                        help='Do an rync after done')
+    parser.add_argument('--rsync-dest', dest='rsync_dest',
+                        default='russandbecky.org:public_html/lr_gallery/',
+                        help='destination for rsync [%(default)s]')
 
     opts = parser.parse_args()
     #opts.verbose=True                     # DEBUG for ipython
