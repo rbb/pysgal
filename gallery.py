@@ -148,7 +148,8 @@ def wr_img(fp, name, loc):
     #print "tags: " +str(tags)
 
     tags = {}
-    print "name = " +name
+    if opts.verbose:
+        print "name = " +name
     fimg = PIL.Image.open(os.path.join(loc, name))
     try :
         for k, v in fimg._getexif().items():
@@ -211,13 +212,13 @@ def WriteGalleryPage(loc, flist, dlist):
         print "WriteGalleryPage: root_url = " +str(root_url)
 
     with open(fout, 'w') as index_file:
-        index_file.write(static.header %
+        index_file.write(static.header_grid %
             (loc, opts.bcolor, opts.dcolor))
         if tail:
             index_file.write("<p>" +tail +"</p>\n")
 
         #------ Navigation
-        index_file.write('\n<div id="nav" class=clearfix>')
+        index_file.write('\n<div id="nav" class=container>')
         if root_url:
             image = root_url +opts.folder_image
             image_up = root_url +opts.folder_up_image
@@ -232,13 +233,15 @@ def WriteGalleryPage(loc, flist, dlist):
             #index_file.write('\n</div>')
             """
 
-            index_file.write('\n   <div class=box>')
-            index_file.write('\n      <a href="' +root_url +'">Home</a>')
-            index_file.write('\n      <a href="../">Up</a>')
+            index_file.write('\n   <div class=module>')
+            index_file.write('\n   <a href="' +root_url +'">Home</a>')
+            index_file.write('\n   <a href="../">Up</a>')
             index_file.write('\n   </div>')
+            index_file.write('\n</div>')
 
         #------ Directories
         if dlist:
+            index_file.write('\n<div id="Albums" class=container>')
             for d in dlist:
                 if opts.verbose:
                     print "WriteGalleryPage: d = " +d
@@ -252,10 +255,10 @@ def WriteGalleryPage(loc, flist, dlist):
                 dir_thumb = d +'_'+opts.thumb+'.jpg'
                 copy_file(thumb, os.path.join(loc, dir_thumb))
                 #wr_dir(index_file, d, root_url, dir_thumb)
-                index_file.write('\n   <div class=box>')
+                index_file.write('\n   <div class=module>')
                 index_file.write('\n   <a href="' +d +'"><img title="' +d +'" src="' +dir_thumb +'"><br>' +d +'</a>')
                 index_file.write('\n   </div>')
-        index_file.write('\n</div>\n')
+            index_file.write('\n</div>\n')
 
 
         #------ Images
@@ -267,7 +270,7 @@ def WriteGalleryPage(loc, flist, dlist):
 
         if flist:
             index_file.write("<hr>\n")
-            index_file.write('\n<div id="images">')
+            index_file.write('\n<div id="images" class=container>')
             for f in flist:
                 if f.lower().endswith('.png') or f.lower().endswith('.jpg') or f.lower().endswith('.tiff'):
                     wr_img(index_file, f, loc)
