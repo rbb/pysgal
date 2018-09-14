@@ -15,6 +15,7 @@ import argparse
 #import exifread
 import PIL.ExifTags
 
+static.root = False
 
 try:
     from PIL import Image
@@ -200,14 +201,12 @@ def WriteGalleryPage(loc, flist, dlist):
         print "WriteGalleryPage: loc = " +loc
         print "WriteGalleryPage: flist = " +str(flist)
         print "WriteGalleryPage: dlist = " +str(dlist)
-        print "WriteGalleryPage: root = " +str(static.root)
         print "WriteGalleryPage: tail = " +str(tail)
         print "WriteGalleryPage: depth = " +str(depth)
         print "WriteGalleryPage: root_url = " +str(root_url)
 
     with open(fout, 'w') as index_file:
-        index_file.write(static.header_grid %
-            (loc, opts.bcolor, opts.dcolor))
+        index_file.write(header_grid(loc))
         index_file.write('\n<div id="nav" class=header>')
         if tail:
             index_file.write("<div class=headsub>Gallery: " +tail +"</div>\n")
@@ -268,8 +267,8 @@ def WriteGalleryPage(loc, flist, dlist):
             index_file.write('\n</div>\n')
 
 
-        index_file.write(static.timestamp % Now())
-        index_file.write(static.footer)
+        index_file.write('\n<p>This page was created on ' +Now() +'<\p>')
+        index_file.write('\n</div></body></html>')
 
 
 def copy_file(src, dst, overwrite=False):
@@ -299,6 +298,117 @@ def clean_thumbs(d):
                     print "deleteing " +f
                     os.remove(os.path.join(dirName, f))
 
+
+
+# Based off code from:
+# https://css-tricks.com/snippets/css/css-grid-starter-layouts/
+def header_grid (title):
+    header = """<!doctype html>
+<html>
+<head>
+<title>""" +title +"""</title>
+<meta charset="utf-8" />
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style type="text/css">
+body {
+    background-color: """ +opts.bcolor +""";
+    color: #839496;
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin: 0 auto;
+    max-width: 90%%; //56em;
+    padding: 1em 0;
+}
+div {
+    background-color: """ +opts.dcolor +""";
+}
+.header {
+    display: flex;
+    align-items: center;
+    font-size: calc(16px + (26 - 16) * ((100vw - 300px) / (1600 - 300)));
+    justify-content: center;
+    //background: #000;
+    color: #fff;
+    //min-height: 10vh;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+}
+.headsub {
+    width: 25%%;
+    max-width: 25%%;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+}
+.grid {
+    /* Grid Fallback */
+    display: flex;
+    flex-wrap: wrap;
+    
+    /* Supports Grid */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250, 1fr));
+    grid-auto-rows: minmax(250px, auto);
+    grid-gap: 1em;
+}
+
+.figure {
+  align: center;
+  //margin: 1em auto;
+  margin: 0.1em;
+  margin-bottom: 3em;
+  width: 100%%;
+  padding: 0.1em;
+  font-size: 60%%;
+  //line-height: 60%%;
+  //vertical-align: top;
+  //color: #808080;
+}
+
+.module {
+    /* Demo-Specific Styles */
+    #background: #eaeaea;
+    display: inline-block;
+    align-items: center;
+    justify-content: center;
+    //height: 250px;
+    margin: 5px;
+    margin-bottom: 10px;
+    
+    /* Flex Fallback */
+    //margin-left: 5px;
+    //margin-right: 5px;
+    //margin-bottom: 5px;
+    //flex: 1 1 250px;
+}
+
+/* If Grid is supported, remove the margin we set for the fallback */
+@supports (display: grid) {
+    .module {
+        margin: 5px;
+        margin-bottom: 10px;
+    }
+}
+.container {
+    overflow: auto;
+    padding: 0.1em;
+}
+a:link {
+  color: """ +opts.lcolor +""";
+  text-decoration: underline;
+}
+a:visited {
+  color: """ +opts.vcolor +""";
+  text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<div id=body>
+"""
+    return header
 
 def main():
     """Main function."""
@@ -334,6 +444,10 @@ if __name__ == '__main__':
                         help='Background color [%(default)s]')
     parser.add_argument('--div-background-color', dest='dcolor', default='#202020',
                         help='Background color [%(default)s]')
+    parser.add_argument('--link-color', dest='lcolor', default='#707070',
+                        help='link text color [%(default)s]')
+    parser.add_argument('--visited-color', dest='vcolor', default='#404040',
+                        help='visited link text color [%(default)s]')
     parser.add_argument('--folder-image', dest='folder_image',
                         default='folder.png',
                         help='filename for folder image [%(default)s]')
