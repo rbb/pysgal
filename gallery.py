@@ -62,6 +62,8 @@ def remove_thumbs_from_list(flist):
 
 def random_image_from_dir(loc, d):
     """Returns path to random image from a given directory."""
+    # TODO: pefer wide images over tall ones
+
     #if opts.verbose:
     #    print "random_image_from_dir: loc = " +str(loc)
     #    print "random_image_from_dir: d = " +str(d)
@@ -155,13 +157,8 @@ def wr_img(fp, name, loc):
         for k, v in fimg._getexif().items():
             if k in PIL.ExifTags.TAGS:
                 key = PIL.ExifTags.TAGS[k]
-                #if 'MakerNote' not in key:
-                #    print str(key) +' = ' +str(v)
-                #print "key = " +str(key)
-                #print "k = " +str(k)
-                #print "v = " +str(v)
                 tags[key] = v
-        #fp.write('\n      <div class=figure>' +name )
+        #TODO: Add caption exif data
         wr_exif_tag(fp, tags, 'DateTime')
         #wr_exif_tag(fp, tags, 'DateTimeOriginal')
         wr_exif_tag(fp, tags, 'ExposureTime', 'Exposure')
@@ -171,16 +168,12 @@ def wr_img(fp, name, loc):
         #wr_exif_tag(fp, tags, 'Make')
         wr_exif_tag(fp, tags, 'Model', 'nl')
         #fp.write('\n      </div>')
+
         fp.write('\n')
     except:
         print "Error collecting EXIF data from " +name
     #print "tags: " +str(tags)
     fp.write('   </div>')
-
-def wr_dir(fp, d, root_url, image=''):
-    if not image:
-        image = root_url +opts.folder_image
-    fp.write('\n   <br><a href="' +d +'"><img title="' +d +'" src="' +image +'">' +d +'</a><br>')
 
 def WriteGalleryPage(loc, flist, dlist):
     """Writes a gallery page for jpgs in path.
@@ -249,9 +242,9 @@ def WriteGalleryPage(loc, flist, dlist):
                 thumbtail = thumb.replace(loc, '')
                 dir_thumb = d +'_'+opts.thumb+'.jpg'
                 copy_file(thumb, os.path.join(loc, dir_thumb), True) # with overwrite
-                #wr_dir(index_file, d, root_url, dir_thumb)
                 index_file.write('\n   <div class=module>')
                 index_file.write('\n   <a href="' +d +'"><img title="' +d +'" src="' +dir_thumb +'"><br>' +d +'</a>')
+                #index_file.write('\n   <a href="' +d +'"><img title="' +d +'/' +opts.index +'" src="' +dir_thumb +'"><br>' +d +'</a>')
                 index_file.write('\n   </div>')
             index_file.write('\n</div>\n')
 
@@ -269,8 +262,9 @@ def WriteGalleryPage(loc, flist, dlist):
             for f in flist:
                 if f.lower().endswith('.png') or f.lower().endswith('.jpg') or f.lower().endswith('.tiff'):
                     wr_img(index_file, f, loc)
-                #else:
-                #    print "WriteGalleryPage skipping " +loc +"/" +f
+                else:
+                    if opts.verbose:
+                        print "WriteGalleryPage skipping " +loc +"/" +f
             index_file.write('\n</div>\n')
 
 
@@ -302,9 +296,8 @@ def main():
         OrganizeRoot()
 
     process_dir(opts.dir)
-    #WriteGalleryPages()
-    #if file.endswith('.tgz') and not file.startswith('.'):
-    #WriteIndex()
+
+    # TODO: do we actually need to copy these?
     copy_file(opts.folder_image, os.path.join(opts.dir, opts.folder_image) )
     copy_file(opts.folder_up_image, os.path.join(opts.dir, opts.folder_up_image) )
 
