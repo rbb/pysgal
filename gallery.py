@@ -287,6 +287,18 @@ def process_dir(d):
         print('---------------------------------')
         WriteGalleryPage(dirName, fileList, subdirList)
 
+def clean_thumbs(d):
+    for dirName, subdirList, fileList in os.walk(d):
+        if not static.root:
+            static.root = dirName
+        print('---------------------------------')
+        print('cleaning directory: %s' % dirName)
+        if fileList:
+            for f in fileList:
+                if opts.thumb in f:
+                    print "deleteing " +f
+                    os.remove(os.path.join(dirName, f))
+
 
 def main():
     """Main function."""
@@ -294,6 +306,9 @@ def main():
 
     if opts.organize:
         OrganizeRoot()
+
+    if opts.cleanup:
+        clean_thumbs(opts.dir)
 
     process_dir(opts.dir)
 
@@ -334,6 +349,9 @@ if __name__ == '__main__':
     parser.add_argument('--organize', dest='organize', action='store_true',
                         default=False,
                         help='Create directories for jpgs, by date')
+    parser.add_argument('-c', dest='cleanup', action='store_true',
+                        default=False,
+                        help='Clean up thumbnails (delete old ones)')
     parser.add_argument('-v', dest='verbose', action='store_true',
                         default=False,
                         help='print extra messages')
