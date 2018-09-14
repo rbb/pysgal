@@ -86,13 +86,32 @@ body {
     color: #839496;
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     margin: 0 auto;
-    max-width: 56em;
+    max-width: 90%%; //56em;
     padding: 1em 0;
 }
 div {
     background-color: %s;
 }
-
+.header {
+    display: flex;
+    align-items: center;
+    font-size: calc(16px + (26 - 16) * ((100vw - 300px) / (1600 - 300)));
+    justify-content: center;
+    //background: #000;
+    color: #fff;
+    //min-height: 10vh;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+}
+.headsub {
+    width: 25%%;
+    max-width: 25%%;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+}
 .grid {
     /* Grid Fallback */
     display: flex;
@@ -100,8 +119,8 @@ div {
     
     /* Supports Grid */
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    grid-auto-rows: minmax(150px, auto);
+    grid-template-columns: repeat(auto-fill, minmax(250, 1fr));
+    grid-auto-rows: minmax(250px, auto);
     grid-gap: 1em;
 }
 
@@ -110,7 +129,6 @@ div {
   //margin: 1em auto;
   margin: 0.1em;
   margin-bottom: 3em;
-  padding: 2em;
   width: 100%%;
   padding: 0.1em;
   font-size: 60%%;
@@ -125,12 +143,12 @@ div {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 200px;
+    height: 250px;
     
     /* Flex Fallback */
     margin-left: 5px;
     margin-right: 5px;
-    flex: 1 1 200px;
+    flex: 1 1 250px;
 }
 
 /* If Grid is supported, remove the margin we set for the fallback */
@@ -139,10 +157,19 @@ div {
         margin: 0;
     }
 }
+.container {
+    overflow: auto;
+    padding: 0.1em;
+}
+a:link, a:visited {
+  //color: #93a1a1;
+  //font-size: 24px;
+  text-decoration: underline;
+}
 </style>
 </head>
 <body>
-<div>
+<div id=body>
 """)
 
 

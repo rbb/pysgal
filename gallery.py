@@ -203,6 +203,7 @@ def WriteGalleryPage(loc, flist, dlist):
         root_url += '../'
 
     if opts.verbose:
+        print "WriteGalleryPage: static.root = " +static.root
         print "WriteGalleryPage: loc = " +loc
         print "WriteGalleryPage: flist = " +str(flist)
         print "WriteGalleryPage: dlist = " +str(dlist)
@@ -214,33 +215,27 @@ def WriteGalleryPage(loc, flist, dlist):
     with open(fout, 'w') as index_file:
         index_file.write(static.header_grid %
             (loc, opts.bcolor, opts.dcolor))
+        index_file.write('\n<div id="nav" class=header>')
         if tail:
-            index_file.write("<p>" +tail +"</p>\n")
+            index_file.write("<div class=headsub>Gallery: " +tail +"</div>\n")
 
         #------ Navigation
-        index_file.write('\n<div id="nav" class=container>')
         if root_url:
+            print "Generating div id=nav"
             image = root_url +opts.folder_image
             image_up = root_url +opts.folder_up_image
-            """
-            index_file.write('\n<div id="nav">')
-            index_file.write('\n   <table width="100%"><tr>')
-            #index_file.write('\n   <a href="' +root_url +'"><img title="root" src="' +image +'">Home</a><br>')
-            index_file.write('\n      <td><a href="' +root_url +'">Home</a></td>')
-            #index_file.write('\n   <a href="../"><img title="up" src="' +image_up +'">Up</a><br>')
-            index_file.write('\n      <td><a href="../">Up</a></td>')
-            index_file.write('\n   </tr></table">')
-            #index_file.write('\n</div>')
-            """
 
-            index_file.write('\n   <div class=module>')
+            index_file.write('\n   <div class=headsub>')
             index_file.write('\n   <a href="' +root_url +'">Home</a>')
+            index_file.write('\n   </div>')
+            index_file.write('\n   <div class=headsub>')
             index_file.write('\n   <a href="../">Up</a>')
             index_file.write('\n   </div>')
-            index_file.write('\n</div>')
+        index_file.write('\n</div>')
 
         #------ Directories
         if dlist:
+            print "Generating div id=Albums"
             index_file.write('\n<div id="Albums" class=container>')
             for d in dlist:
                 if opts.verbose:
@@ -348,8 +343,8 @@ if __name__ == '__main__':
     # rsync -avz -e "ssh" . russandbecky.org:public_html/lr_gallery/
 
     opts = parser.parse_args()
-    opts.verbose=True                     # DEBUG for ipython
+    #opts.verbose=True                     # DEBUG for ipython
     #opts.dir='/var/www/html/gallery/'     # DEBUG for ipython
-    opts.dir='/home/russell/Pictures/gallery/'     # DEBUG for ipython
+    #opts.dir='/home/russell/Pictures/gallery/'     # DEBUG for ipython
 
     main()
