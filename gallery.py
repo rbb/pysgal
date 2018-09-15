@@ -8,14 +8,13 @@ import os
 import random
 import re
 import shutil
-import static
 import sys
 import time
 import argparse
 #import exifread
 import PIL.ExifTags
 
-static.root = False
+root = False
 
 try:
     from PIL import Image
@@ -162,6 +161,7 @@ def wr_img(fp, name, loc):
         #TODO: Add caption exif data
         wr_exif_tag(fp, tags, 'DateTime')
         #wr_exif_tag(fp, tags, 'DateTimeOriginal')
+        wr_exif_tag(fp, tags, 'Image Description')      # Caption in Lightroom
         wr_exif_tag(fp, tags, 'ExposureTime', 'Exposure')
         wr_exif_tag(fp, tags, 'FNumber', 'F Number')
         wr_exif_tag(fp, tags, 'FocalLength', 'Focal Length')
@@ -184,11 +184,12 @@ def WriteGalleryPage(loc, flist, dlist):
     flist: list of files in the dir. <src> tags are created for images.
     dlist: list of directories in the dir. Links are created for each dir
     """
+    global root
     fout = os.path.join(loc, opts.index)
 
     # Calculate our relative directory depth, and how many '../' references we
     # need to get to where the folder.png and folder_up.png files are located.
-    tail = loc.replace(static.root, '')
+    tail = loc.replace(root, '')
     depth = tail.count('/')
     if tail:
         depth += 1
@@ -197,7 +198,7 @@ def WriteGalleryPage(loc, flist, dlist):
         root_url += '../'
 
     if opts.verbose:
-        print "WriteGalleryPage: static.root = " +static.root
+        print "WriteGalleryPage: root = " +root
         print "WriteGalleryPage: loc = " +loc
         print "WriteGalleryPage: flist = " +str(flist)
         print "WriteGalleryPage: dlist = " +str(dlist)
@@ -278,27 +279,22 @@ def copy_file(src, dst, overwrite=False):
         shutil.copyfile(src, dst)
 
 def process_dir(d):
+    global root
     for dirName, subdirList, fileList in os.walk(d):
-        if not static.root:
-            static.root = dirName
+        if not root:
+            root = dirName
         print('---------------------------------')
         print('Found directory: %s' % dirName)
         print('---------------------------------')
+        if opts.cleanup:
+            print('cleaning directory: %s' % dirName)
+            print('---------------------------------')
+            if fileList:
+                for f in fileList:
+                    if opts.thumb in f:
+                        print "deleteing " +f
+                        os.remove(os.path.join(dirName, f))
         WriteGalleryPage(dirName, fileList, subdirList)
-
-def clean_thumbs(d):
-    for dirName, subdirList, fileList in os.walk(d):
-        if not static.root:
-            static.root = dirName
-        print('---------------------------------')
-        print('cleaning directory: %s' % dirName)
-        if fileList:
-            for f in fileList:
-                if opts.thumb in f:
-                    print "deleteing " +f
-                    os.remove(os.path.join(dirName, f))
-
-
 
 # Based off code from:
 # https://css-tricks.com/snippets/css/css-grid-starter-layouts/
@@ -413,12 +409,8 @@ a:visited {
 def main():
     """Main function."""
 
-
     if opts.organize:
         OrganizeRoot()
-
-    if opts.cleanup:
-        clean_thumbs(opts.dir)
 
     process_dir(opts.dir)
 
