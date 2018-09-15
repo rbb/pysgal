@@ -164,7 +164,7 @@ def wr_img(fp, name, loc):
         fp.write('\n')
     except:
         print "Error collecting EXIF data from " +name
-    #print "tags: " +str(tags)
+    #print "tags: " +str(tags)      # DEBUG
 
     fp.write('   </div>')
 
@@ -222,7 +222,7 @@ def WriteGalleryPage(loc, flist, dlist):
         if dlist:
             print "Generating div id=Albums"
             index_file.write('\n<div id="Albums" class=container>')
-            for d in dlist:
+            for d in sorted(dlist):
                 if opts.verbose:
                     print "WriteGalleryPage: d = " +d
                 rimage = random_image_from_dir(loc, d)
@@ -251,7 +251,7 @@ def WriteGalleryPage(loc, flist, dlist):
         if flist:
             index_file.write("<hr>\n")
             index_file.write('\n<div id="images" class=container>')
-            for f in flist:
+            for f in sorted(flist):
                 if f.lower().endswith('.png') or f.lower().endswith('.jpg') or f.lower().endswith('.tiff'):
                     wr_img(index_file, f, loc)
                 else:
@@ -326,7 +326,10 @@ div {
 .headsub {
     width: 25%%;
     max-width: 25%%;
-    margin: 0;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    margin-top: 0.1em;
+    margin-bottom: 0.1em;
     padding: 0;
     border-width: 0;
 }
