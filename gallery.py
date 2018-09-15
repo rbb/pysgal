@@ -143,53 +143,29 @@ def wr_img(fp, name, loc):
     fp.write('\n   <div class=figure>')
     fp.write('\n      <a href="' +name +'"><img title="' +name +'" src="' +name
             +'" width="100%%"></a><b>' +name +'</b>')
-    #fp.write('\n      <img title="' +name +'" src="' +name +'" width="100%"></a>')
-
-    # Open image file for reading (binary mode)
-    #f = open(os.path.join(loc, name), 'rb')
-    # Return Exif tags
-    #tags = exifread.process_file(f)
-    #print "tags: " +str(tags)
 
     tags = {}
     if opts.verbose:
         print "name = " +name
-    #fimg = PIL.Image.open(os.path.join(loc, name))
     fimg = open(os.path.join(loc, name), 'rb')
     try :
-        """
-        for k, v in fimg._getexif().items():
-            if k in PIL.ExifTags.TAGS:
-                key = PIL.ExifTags.TAGS[k]
-                tags[key] = v
-        #TODO: Add caption exif data
-        wr_exif_tag(fp, tags, 'DateTime')
-        #wr_exif_tag(fp, tags, 'DateTimeOriginal')
-        wr_exif_tag(fp, tags, 'Image Description')      # Caption in Lightroom
-        wr_exif_tag(fp, tags, 'ExposureTime', 'Exposure')
-        wr_exif_tag(fp, tags, 'FNumber', 'F Number')
-        wr_exif_tag(fp, tags, 'FocalLength', 'Focal Length')
-        wr_exif_tag(fp, tags, 'ISOSpeedRatings', 'ISO')
-        #wr_exif_tag(fp, tags, 'Make')
-        wr_exif_tag(fp, tags, 'Model', 'nl')
-        #fp.write('\n      </div>')
-        """
-
         tags = exifread.process_file(fimg)
         wr_exif_tag(fp, tags, 'Image DateTime')
+        wr_exif_tag(fp, tags, 'Image ImageDescription')
         #wr_exif_tag(fp, tags, 'EXIF ApertureValue', 'Aperture')
-        wr_exif_tag(fp, tags, 'EXIF FNumber', 'Aperture')
-        wr_exif_tag(fp, tags, 'EXIF ExposureTime', 'Shutter')
+        fp.write('\n      <br>Exposure: f' +str(tags['EXIF FNumber']) +' at '
+                +str(tags['EXIF ExposureTime']) +' sec, ISO '
+                +str(tags['EXIF ISOSpeedRatings']) )
+        wr_exif_tag(fp, tags, 'EXIF FocalLength', 'Focal Length')
         wr_exif_tag(fp, tags, 'EXIF Flash', 'Flash')
         #wr_exif_tag(fp, tags, 'EXIF ExposureMode')
-        wr_exif_tag(fp, tags, 'EXIF FocalLength', 'Focal Length')
-        wr_exif_tag(fp, tags, 'EXIF ISOSpeedRatings', 'ISO')
         wr_exif_tag(fp, tags, 'Image Model', 'Model')
 
         fp.write('\n')
     except:
         print "Error collecting EXIF data from " +name
     #print "tags: " +str(tags)
+
     fp.write('   </div>')
 
 def WriteGalleryPage(loc, flist, dlist):
@@ -280,11 +256,11 @@ def WriteGalleryPage(loc, flist, dlist):
                     wr_img(index_file, f, loc)
                 else:
                     if opts.verbose:
-                        print "WriteGalleryPage skipping " +loc +"/" +f
+                        print "WriteGalleryPage skipping non-image file " +loc +"/" +f
             index_file.write('\n</div>\n')
 
 
-        index_file.write('\n<p>This page was created on ' +Now() +'<\p>')
+        index_file.write('\n<p>This page was updated on ' +Now() +'</p>')
         index_file.write('\n</div></body></html>')
 
 
