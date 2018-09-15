@@ -11,8 +11,8 @@ import shutil
 import sys
 import time
 import argparse
-#import exifread
 import PIL.ExifTags
+import exifread
 
 root = False
 
@@ -123,6 +123,8 @@ def thumbnail(jpg):
             pass
     return thumb
 
+def pr_exif_tag(tags, t):
+    print t +' = ' + str(tags[t])
 
 def wr_exif_tag(fp, tags, tag, label='none'):
     #print "wr_exif_tag: tag = " + str(tag)
@@ -152,8 +154,10 @@ def wr_img(fp, name, loc):
     tags = {}
     if opts.verbose:
         print "name = " +name
-    fimg = PIL.Image.open(os.path.join(loc, name))
+    #fimg = PIL.Image.open(os.path.join(loc, name))
+    fimg = open(os.path.join(loc, name), 'rb')
     try :
+        """
         for k, v in fimg._getexif().items():
             if k in PIL.ExifTags.TAGS:
                 key = PIL.ExifTags.TAGS[k]
@@ -169,6 +173,18 @@ def wr_img(fp, name, loc):
         #wr_exif_tag(fp, tags, 'Make')
         wr_exif_tag(fp, tags, 'Model', 'nl')
         #fp.write('\n      </div>')
+        """
+
+        tags = exifread.process_file(fimg)
+        wr_exif_tag(fp, tags, 'Image DateTime')
+        #wr_exif_tag(fp, tags, 'EXIF ApertureValue', 'Aperture')
+        wr_exif_tag(fp, tags, 'EXIF FNumber', 'Aperture')
+        wr_exif_tag(fp, tags, 'EXIF ExposureTime', 'Shutter')
+        wr_exif_tag(fp, tags, 'EXIF Flash', 'Flash')
+        #wr_exif_tag(fp, tags, 'EXIF ExposureMode')
+        wr_exif_tag(fp, tags, 'EXIF FocalLength', 'Focal Length')
+        wr_exif_tag(fp, tags, 'EXIF ISOSpeedRatings', 'ISO')
+        wr_exif_tag(fp, tags, 'Image Model', 'Model')
 
         fp.write('\n')
     except:
