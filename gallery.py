@@ -60,7 +60,7 @@ def remove_thumbs_from_list(flist):
         mylist.remove(f)
     return mylist
 
-def random_image_from_dir(loc, d):
+def random_image_from_dir(loc, d, remove_thumbs=True):
     """Returns path to random image from a given directory."""
     # TODO: pefer wide images over tall ones
 
@@ -69,7 +69,8 @@ def random_image_from_dir(loc, d):
     #    print "random_image_from_dir: d = " +str(d)
     #images = glob.glob(os.path.join(opts.dir, d, '*.[Jj][Pp][Gg]'))
     images = glob.glob(os.path.join(loc, d, '*.[Jj][Pp][Gg]'))
-    images = remove_thumbs_from_list(images)
+    if remove_thumbs:
+        images = remove_thumbs_from_list(images)
     #if opts.verbose:
     #    print "random_image_from_dir: images = " +str(images)
     if images:
@@ -78,8 +79,11 @@ def random_image_from_dir(loc, d):
         if opts.verbose:
             print "random_image_from_dir: image = " +str(image)
             print "random_image_from_dir: tail = " +str(tail)
+    elif remove_thumbs:
+        tail = random_image_from_dir(loc, d, False)
     else:
         tail = False
+
     return tail
 
 
@@ -225,15 +229,58 @@ def WriteGalleryPage(loc, flist, dlist):
             for d in sorted(dlist):
                 if opts.verbose:
                     print "WriteGalleryPage: d = " +d
-                rimage = random_image_from_dir(loc, d)
-                if rimage:
-                    thumb = thumbnail( os.path.join(loc, rimage) )
+                thumbtxt = os.path.join(loc, d, opts.thumb_txt)
+                thumbimg = False
+                if os.path.exists(thumbtxt):
+                    if opts.verbose:
+                        print "      FOUND thumb.txt: " +thumbtxt
+                    fthumbtxt = open(thumbtxt, 'rb')
+                    thumbimg = fthumbtxt.readline().rstrip()
+                    while '#' in thumbimg:
+                        thumbimg = fthumbtxt.readline().rstrip()
+                    if opts.verbose:
+                        print "      thumbimg: " +thumbimg
+                    thumbimg = os.path.join(loc, d, thumbimg)
+                    if opts.verbose:
+                        print "      thumbimg: " +thumbimg
+                    if not os.path.exists(thumbimg):
+                        thumbimg = False
+                    elif not 'jpg' in thumbimg and not 'png' in thumbimg:
+                        thumbimg = False
+                    elif not opts.thumb in thumbimg:
+                        # TODO Create the thumbnail file from the full size jpg
+                        thumbimg = False
+                    if opts.verbose:
+                        print "      thumbimg: " +str(thumbimg)
+                    fthumbtxt.close()
+
+                if not thumbimg:
+                    print loc
+                    print d
+                    rimg = random_image_from_dir(loc, d)
+                    if rimg:
+                        thumbimg = thumbnail( os.path.join(loc, rimg) )
+                        #thumbimg = os.path.join(loc, rimg)
+                        if opts.verbose:
+                            print "      thumbimg from random: " +str(thumbimg)
+
+                if not thumbimg:
+                    thumbimg = opts.folder_image
+                    if opts.verbose:
+                        print "      thumbimg from folder_image: " +str(thumb)
+
+                fullimg = thumbimg.replace('_'+opts.thumb, '')
+                if thumbimg != opts.folder_image and not os.path.exists(thumbimg) and os.path.exists(fullimg):
+                    print '      Creating thumbnail ' +thumbimg
+                    thumb = thumbnail( fullimg )
                 else:
-                    thumb = opts.folder_image
+                    thumb = thumbimg
+
 
                 thumbtail = thumb.replace(loc, '')
                 dir_thumb = d +'_'+opts.thumb+'.jpg'
-                copy_file(thumb, os.path.join(loc, dir_thumb), True) # with overwrite
+                dst_thumb = os.path.join(loc, dir_thumb)
+                copy_file(thumb, dst_thumb, opts.overwrite)
                 index_file.write('\n   <div class=module>')
                 index_file.write('\n   <a href="' +d +'"><img title="' +d +'" src="' +dir_thumb +'"><br>' +d +'</a>')
                 #index_file.write('\n   <a href="' +d +'"><img title="' +d +'/' +opts.index +'" src="' +dir_thumb +'"><br>' +d +'</a>')
@@ -427,23 +474,31 @@ if __name__ == '__main__':
                         help='temporary folder to move corrupt files to [%(default)s]')
     parser.add_argument('-i', '--index', dest='index', default='index.html',
                         help='filename for html files [%(default)s]')
-    parser.add_argument('--background-color', dest='bcolor', default='#101010',
-                        help='Background color [%(default)s]')
-    parser.add_argument('--div-background-color', dest='dcolor', default='#202020',
-                        help='Background color [%(default)s]')
+    parser.add_argument('--bg-color', dest='bcolor', default='#101010',
+                        metavar='C',
+                        help='Background color for body div [%(default)s]')
+    parser.add_argument('--div-bg-color', dest='dcolor', default='#202020',
+                        metavar='C',
+                        help='Background color for all other div blocks [%(default)s]')
     parser.add_argument('--link-color', dest='lcolor', default='#707070',
+                        metavar='C',
                         help='link text color [%(default)s]')
     parser.add_argument('--visited-color', dest='vcolor', default='#404040',
+                        metavar='C',
                         help='visited link text color [%(default)s]')
     parser.add_argument('--folder-image', dest='folder_image',
-                        default='folder.png',
+                        default='folder.png', metavar='F',
                         help='filename for folder image [%(default)s]')
     parser.add_argument('--thumb', dest='thumb', default='thumb',
                         help='text to append to base of image filename for thumbnails [%(default)s]')
     parser.add_argument('--thumbsize', dest='thumbsize', metavar='N', default=200,
                         help='thumbnail size [%(default)s]')
+    parser.add_argument('--thumb-txt', dest='thumb_txt', default='thumb.txt',
+                        metavar='F',
+                        help='text file with name of thumbnail for directory [%(default)s].'
+                        ' lines with "#" in them are considered comments.')
     parser.add_argument('--folder-up-image', dest='folder_up_image',
-                        default='folder_up.png',
+                        default='folder_up.png', metavar='F',
                         help='filename for folder image [%(default)s]')
     #parser.add_argument('-x', '--exclude', dest='exclude', nargs='+', default=[],
     #                    help='list of folders to exclude [%(default)s]')
@@ -459,13 +514,18 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--rsync', dest='rsync', action='store_true',
                         default=False,
                         help='Do an rync after done')
+    parser.add_argument('-o', '--overwrite', dest='overwrite', action='store_true',
+                        default=False,
+                        help='overwrite thumbnails')
     parser.add_argument('--rsync-dest', dest='rsync_dest',
                         default='russandbecky.org:public_html/lr_gallery/',
                         help='destination for rsync [%(default)s]')
 
     opts = parser.parse_args()
     #opts.verbose=True                     # DEBUG for ipython
+    #opts.overwrite=True                    # DEBUG for ipython
+    #opts.dir='/Users/russell/Pictures/_gallery/'     # DEBUG for ipython
     #opts.dir='/var/www/html/gallery/'     # DEBUG for ipython
-    #opts.dir='/home/russell/Pictures/gallery/'     # DEBUG for ipython
+    #opts.dir='/Users/russell/Pictures/albums/'     # DEBUG for ipython
 
     main()
