@@ -25,26 +25,6 @@ except ImportError:
         print 'Requires Python Imaging Library. See README.'
         sys.exit(1)
 
-
-def ListFiles(regex, path):
-    """Returns list of matching files in path."""
-    rule = re.compile(fnmatch.translate(regex), re.IGNORECASE)
-    return [name for name in os.listdir(path) if rule.match(name)] or None
-
-
-#def ListDirs(path):
-#    """Returns list of directories in path."""
-#    return [d for d in os.listdir(path) if os.path.isdir(
-#        os.path.join(path, d))]
-
-
-def Now(time=True):
-    """Returns formatted current time."""
-    if time:
-        return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    else:
-        return datetime.datetime.now().strftime('%Y%m%d')
-
 def remove_thumbs_from_list(flist):
     """Remove all the "_thumb" filenames from a list"""
     mylist = list(flist)
@@ -86,28 +66,6 @@ def random_image_from_dir(loc, d, remove_thumbs=True):
 
     return tail
 
-
-def OrganizeRoot():
-    """Creates directories for images in root directory."""
-    try:
-        os.chdir(opts.dir)
-    except OSError:
-        print 'Could not cd into %s' % opts.dir
-        sys.exit(1)
-
-    fs = ListFiles('*.jpg', '.')
-    if fs:
-        for jpg in fs:
-            datehour = Now(time=False)
-            if not os.path.exists(datehour):
-                print 'Creating directory: %s' % datehour
-                os.makedirs(datehour)
-            if not os.path.exists(os.path.join(datehour, jpg)):
-                shutil.move(jpg, datehour)
-            else:
-                print '%s already exists' % os.path.join(datehour, jpg)
-
-
 def thumbnail(jpg):
     """Generates a thumbnail of an image."""
 
@@ -126,9 +84,6 @@ def thumbnail(jpg):
             print 'Could not move %s' % jpg
             pass
     return thumb
-
-def pr_exif_tag(tags, t):
-    print t +' = ' + str(tags[t])
 
 def wr_exif_tag(fp, tags, tag, label='none'):
     #print "wr_exif_tag: tag = " + str(tag)
@@ -172,7 +127,7 @@ def wr_img(fp, name, loc):
 
     fp.write('   </div>')
 
-def WriteGalleryPage(loc, flist, dlist):
+def wr_page(loc, flist, dlist):
     """Writes a gallery page for jpgs in path.
 
     Args:
@@ -194,13 +149,13 @@ def WriteGalleryPage(loc, flist, dlist):
         root_url += '../'
 
     if opts.verbose:
-        print "WriteGalleryPage: root = " +root
-        print "WriteGalleryPage: loc = " +loc
-        print "WriteGalleryPage: flist = " +str(flist)
-        print "WriteGalleryPage: dlist = " +str(dlist)
-        print "WriteGalleryPage: tail = " +str(tail)
-        print "WriteGalleryPage: depth = " +str(depth)
-        print "WriteGalleryPage: root_url = " +str(root_url)
+        print "wr_page: root = " +root
+        print "wr_page: loc = " +loc
+        print "wr_page: flist = " +str(flist)
+        print "wr_page: dlist = " +str(dlist)
+        print "wr_page: tail = " +str(tail)
+        print "wr_page: depth = " +str(depth)
+        print "wr_page: root_url = " +str(root_url)
 
     with open(fout, 'w') as index_file:
         index_file.write(header_grid(loc))
@@ -228,7 +183,7 @@ def WriteGalleryPage(loc, flist, dlist):
             index_file.write('\n<div id="Albums" class=container>')
             for d in sorted(dlist):
                 if opts.verbose:
-                    print "WriteGalleryPage: d = " +d
+                    print "wr_page: d = " +d
                 thumbtxt = os.path.join(loc, d, opts.thumb_txt)
                 thumbimg = False
                 if os.path.exists(thumbtxt):
@@ -303,11 +258,12 @@ def WriteGalleryPage(loc, flist, dlist):
                     wr_img(index_file, f, loc)
                 else:
                     if opts.verbose:
-                        print "WriteGalleryPage skipping non-image file " +loc +"/" +f
+                        print "wr_page skipping non-image file " +loc +"/" +f
             index_file.write('\n</div>\n')
 
 
-        index_file.write('\n<p>This page was updated on ' +Now() +'</p>')
+        t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        index_file.write('\n<p>This page was updated on ' +t +'</p>')
         index_file.write('\n</div></body></html>')
 
 
@@ -333,7 +289,7 @@ def process_dir(d):
                     if opts.thumb in f:
                         print "deleteing " +f
                         os.remove(os.path.join(dirName, f))
-        WriteGalleryPage(dirName, fileList, subdirList)
+        wr_page(dirName, fileList, subdirList)
 
 # Based off code from:
 # https://css-tricks.com/snippets/css/css-grid-starter-layouts/
